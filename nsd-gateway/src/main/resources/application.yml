@@ -1,0 +1,54 @@
+server:
+  port: 8093
+spring:
+  application:
+    name: nsd-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+    sentinel:
+      transport:
+        dashboard: 127.0.0.1:8080
+        port: 8719
+      datasource:
+        # 自定义的流控规则数据源名称
+        flow:
+          nacos:
+            server-addr: ${spring.cloud.nacos.discovery.server-addr}
+            data-id: ${spring.application.name}-flow-rules
+            groupId: DEFAULT_GROUP
+            data-type: json
+            rule-type: flow  # 类型来自RuleType类
+        # 自定义的降级规则数据源名称
+        degrade:
+          nacos:
+            server-addr: ${spring.cloud.nacos.discovery.server-addr}
+            data-id: ${spring.application.name}-degrade-rules
+            groupId: DEFAULT_GROUP
+            data-type: json
+            rule-type: degrade  # 类型来自RuleType类
+    discovery:
+      client:
+        composite-indicator:
+          enabled: false
+        health-indicator:
+          enabled: false
+  main:
+    allow-bean-definition-overriding: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  # 暴露健康接口的细节
+  endpoint:
+    health:
+      show-details: always
+dubbo:
+  registry:
+    # 挂载到 Spring Cloud 注册中心
+    address: nacos://localhost/:8848?namespace=a15ca42b-50eb-41ba-abf8-016878d30b14
+  cloud:
+    # 订阅服务提供方的应用列表，订阅多个服务提供者使用 "," 连接
+    subscribed-services: nsd-email-service,nsd-code-service,nsd-user-service
